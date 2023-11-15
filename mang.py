@@ -1,10 +1,11 @@
 import random
 
-with open("lemmad.txt", encoding="ANSI") as f:
-    sõnad = 
+with open("poomismang\lemmad.txt", encoding="ANSI") as f:
+    sõnad =  f.read().split('\n')
 
-sõna = sõnad[random.randint(0, len(sõnad)-1)]
+def new_game():
+    sõna = sõnad[random.randint(0, len(sõnad)-1)]
+    lüngad = " _ " * len(sõna)
+    print(lüngad)
 
-
-lüngad = " _ " * len(sõna)
-
+new_game()
