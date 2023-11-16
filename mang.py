@@ -1,6 +1,6 @@
 import random
 
-with open("poomismang\lemmad.txt", encoding="UTF-8") as f:
+with open("poomismang\lemmad.txt", encoding="cp1252") as f:
     sõnad =  f.read().split('\n')
 def joonista(katsed):
     faasid = [
