@@ -2,6 +2,13 @@ import random
 
 with open("poomismang\lemmad.txt", encoding="cp1252") as f:
     sõnad =  f.read().split('\n')
+
+#raskusastmed
+kerge = [sõna for sõna in sõnad if len(sõna) <= 4]
+paras = [sõna for sõna in sõnad if len(sõna) < 7 and len(sõna) > 4]
+raske = [sõna for sõna in sõnad if len(sõna) > 6]
+raskusastmed = {"kerge": kerge, "paras": paras, "raske": raske}
+
 def joonista(katsed):
     faasid = [
         """
@@ -71,9 +78,9 @@ def joonista(katsed):
     ]
     print(faasid[7-katsed])
 
-def new_game():
+def new_game(raskusaste):
     katsed = 7
-    sõna = sõnad[random.randint(0, len(sõnad)-1)]
+    sõna = raskusaste[random.randint(0, len(raskusaste)-1)]
     arvatud = []
     valed = []
     while katsed > 0:
@@ -94,4 +101,8 @@ def new_game():
 
     print(f"Mäng läbi! Sõna oli: {sõna}")
 
-new_game()
+valik = input("Sisesta raskusaste. Valikud on: Kerge/Paras/Raske: ").casefold()
+if valik in raskusastmed:
+    new_game(raskusastmed[valik])
+else:
+    print("Vale sisend. Palun sisesta 'Kerge', 'Paras' või 'Raske'.")
