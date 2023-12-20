@@ -1,16 +1,162 @@
 import pygame
 import sys
+import random
 
 # Initialize Pygame
 pygame.init()
+
+# Read file
+with open("poomismang\lemmad.txt", encoding="cp1252") as f:
+    words =  f.read().split('\n')
+
+# Make difficulties
+easy = [word for word in words if len(word) <= 4]
+medium = [word for word in words if 4 < len(word) < 7]
+hard = [word for word in words if len(word) > 6]
 
 # Set up some constants
 SCREEN_WIDTH, SCREEN_HEIGHT = 600, 800
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+FONT = pygame.font.Font(None, 36)
 
 # Create the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+class InputBox:
+    def __init__(self, x, y, w, h, text=''):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.color = (255, 0, 0)
+        self.text = text
+        self.txt_surface = FONT.render(text, True, self.color)
+        self.active = False
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # Toggle the active variable when the user clicks on the input box.
+            if self.rect.collidepoint(event.pos):
+                self.active = not self.active
+            else:
+                self.active = False
+            self.color = (0, 255, 0) if self.active else (255, 0, 0)
+        if event.type == pygame.KEYDOWN:
+            if self.active:
+                if event.key == pygame.K_RETURN:
+                    guess = self.text
+                    self.text = ''  # Clear the input field
+                    return guess
+                elif event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                else:
+                    self.text += event.unicode
+                self.txt_surface = FONT.render(self.text, True, self.color)
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect, 2)
+        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+        pygame.draw.rect(screen, self.color, self.rect, 2)
+
+def draw_game_state(word, guessed, wrong, attempts, screen):
+    # Clear the screen
+    screen.fill(WHITE)
+
+    # Render the text
+    text_surface = FONT.render("Word: " + ''.join(letter if letter in guessed else '_' for letter in word), True, BLACK)
+
+    # Draw the text on the screen
+    screen.blit(text_surface, (20, 20))
+
+    # Draw the guessed letters
+    draw_wrong_letters(wrong, screen)
+
+    # Draw the hangman
+    # Add your hangman drawing code here
+
+def draw_wrong_letters(wrong, screen):
+    # Render the text
+    wrong_text = ", ".join(wrong)
+    text_surface = FONT.render("Wrong Letters: " + wrong_text, True, BLACK)
+
+    # Draw the text on the screen
+    screen.blit(text_surface, (20, 60))  # Adjust the position as needed
+    pygame.display.flip()  # Update the screen
+
+def new_game(difficulty):
+    running = True
+    game_over = False
+    attempts = 7
+    word = difficulty[random.randint(0, len(difficulty)-1)]
+    guessed = []
+    wrong = []
+
+    # Define the input box
+    input_box = InputBox(100, 100, 140, 32)
+
+    # Define the submit button
+    submit_button = pygame.Rect(250, 100, 100, 32)
+
+    # Define the back button
+    back_button = pygame.Rect(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100, 100, 50)
+
+    while running:
+        guess = None  # Initialize guess to None before the event loop
+
+        for event in pygame.event.get():
+            # Handle the event in the input box
+            if event.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN):
+                guess = input_box.handle_event(event)
+
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if game_over and back_button.collidepoint(event.pos):
+                    menu()
+                elif submit_button.collidepoint(event.pos) and guess is not None:  # If a guess was returned
+                    if guess in word:
+                        guessed.append(guess)
+                        if all(letter in guessed for letter in word):
+                            print(f"Well done! You guessed the word! The word was: {word}")
+                            game_over = True
+                    else:
+                        attempts -= 1
+                        wrong.append(guess)
+
+            if guess is not None:  # If Enter was pressed
+                if guess in word:
+                    guessed.append(guess)
+                    if all(letter in guessed for letter in word):
+                        print(f"Well done! You guessed the word! The word was: {word}")
+                        game_over = True
+                else:
+                    attempts -= 1
+                    wrong.append(guess)
+
+            if attempts == 0:
+                print(f"You lost. The word was: {word}")
+                game_over = True
+
+            # Draw the game state
+            draw_game_state(word, guessed, wrong, attempts, screen)
+
+            # Draw the wrong letters
+            draw_wrong_letters(wrong, screen)
+
+            # Draw the input box
+            input_box.draw(screen)
+
+            # Draw the submit button
+            draw_button("Submit", submit_button)
+
+            # Draw the back button if the game is over
+            if game_over:
+                draw_button("Back", back_button)
+
+            # Update the display
+            pygame.display.flip()
+
+    # Go back to the main menu after the game ends
+    menu()
 
 # Create a function to draw a button
 def draw_button(text, rect):
@@ -49,25 +195,8 @@ def draw_menu(play_button, exit_button, mouse_pos):
     exit_button.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - SCREEN_HEIGHT // 3 + 170)
 
     # Draw the buttons
-    draw_button("Mängi", play_button)
-    draw_button("Välju", exit_button)
-
-# Create a function to draw the game
-def draw_game():
-    # Clear the screen
-    screen.fill(WHITE)
-
-    # Set up the font
-    font = pygame.font.Font(None, 36)
-
-    # Render the text
-    text = font.render("Game goes here", True, BLACK)
-    
-    # Calculate the position
-    text_pos = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-
-    # Draw the text on the screen
-    screen.blit(text, text_pos)
+    draw_button("Play", play_button)
+    draw_button("Exit", exit_button)
 
 # Create a function to handle the difficulty selection
 def difficulty_selection():
@@ -90,19 +219,19 @@ def difficulty_selection():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Check if the mouse click was within the buttons
                 if easy_button.collidepoint(mouse_pos):
-                    # The 'Kerge' button was clicked
-                    new_game(kerge)
+                    # The 'Easy' button was clicked
+                    new_game(easy)
                     running = False
                 elif medium_button.collidepoint(mouse_pos):
-                    # The 'Paras' button was clicked
-                    new_game(paras)
+                    # The 'Medium' button was clicked
+                    new_game(medium)
                     running = False
                 elif hard_button.collidepoint(mouse_pos):
-                    # The 'Raske' button was clicked
-                    new_game(raske)
+                    # The 'Hard' button was clicked
+                    new_game(hard)
                     running = False
                 elif back_button.collidepoint(mouse_pos):
-                    # The 'Tagasi' button was clicked
+                    # The 'Back' button was clicked
                     return  # Go back to the main menu
 
         # Draw the difficulty selection
@@ -122,10 +251,10 @@ def draw_difficulty_selection(easy_button, medium_button, hard_button, back_butt
     back_button.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50)
 
     # Draw the buttons
-    draw_button("Kerge", easy_button)
-    draw_button("Paras", medium_button)
-    draw_button("Raske", hard_button)
-    draw_button("Tagasi", back_button)
+    draw_button("Easy", easy_button)
+    draw_button("Medium", medium_button)
+    draw_button("Hard", hard_button)
+    draw_button("Back", back_button)
 
 # Create a function to handle the menu
 def menu():
@@ -145,10 +274,10 @@ def menu():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Check if the mouse click was within the buttons
                 if play_button.collidepoint(mouse_pos):
-                    # The 'Mängi' button was clicked
+                    # The 'Play' button was clicked
                     difficulty_selection()
                 elif exit_button.collidepoint(mouse_pos):
-                    # The 'Välju' button was clicked
+                    # The 'Exit' button was clicked
                     running = False
 
         # Draw the menu
