@@ -14,13 +14,46 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Create a function to draw the menu
 def draw_menu():
-    # Here you can add code to draw the menu
-    pass
+    # Clear the screen
+    screen.fill(WHITE)
+
+    # Set up the font
+    font = pygame.font.Font(None, 36)
+
+    # Render the text
+    text = font.render("Mängi", True, BLACK)
+    
+    # Calculate the position
+    text_pos = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50))
+
+    # Draw the text on the screen
+    screen.blit(text, text_pos)
+
+    # Render the text
+    text = font.render("Välju", True, BLACK)
+    
+    # Calculate the position
+    text_pos = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50))
+
+    # Draw the text on the screen
+    screen.blit(text, text_pos)
 
 # Create a function to draw the game
 def draw_game():
-    # Here you can add code to draw the game
-    pass
+    # Clear the screen
+    screen.fill(WHITE)
+
+    # Set up the font
+    font = pygame.font.Font(None, 36)
+
+    # Render the text
+    text = font.render("Game goes here", True, BLACK)
+    
+    # Calculate the position
+    text_pos = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+
+    # Draw the text on the screen
+    screen.blit(text, text_pos)
 
 # Create a function to handle the menu
 def menu():
