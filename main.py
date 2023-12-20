@@ -45,6 +45,7 @@ class InputBox:
                 if event.key == pygame.K_RETURN:
                     guess = self.text
                     self.text = ''  # Clear the input field
+                    self.txt_surface = FONT.render(self.text, True, self.color)
                     return guess
                 elif event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
@@ -53,14 +54,11 @@ class InputBox:
                 self.txt_surface = FONT.render(self.text, True, self.color)
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect, 2)
         screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
         pygame.draw.rect(screen, self.color, self.rect, 2)
         pygame.display.update(self.rect)
 
 def draw_game_state(word, guessed, wrong, attempts, screen):
-    # Clear the screen
-    screen.fill(WHITE)
 
     # Render the text
     text_surface = FONT.render("Sõna: " + ' '.join(letter if letter in guessed else '_' for letter in word), True, BLACK)
@@ -68,11 +66,17 @@ def draw_game_state(word, guessed, wrong, attempts, screen):
     # Draw the text on the screen
     screen.blit(text_surface, (20, 20))
 
-    # Draw the guessed letters
+    # Draw the wrong letters
     draw_wrong_letters(wrong, screen)
 
     # Draw the hangman
     # Add your hangman drawing code here
+    
+    # Update the display
+    pygame.display.update()
+
+    # Cap the frame rate at 60 FPS
+    clock.tick(60)
 
 def draw_wrong_letters(wrong, screen):
     # Render the text
@@ -101,6 +105,8 @@ def new_game(difficulty):
     back_button = pygame.Rect(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100, 100, 50)
 
     while running:
+        # Clear the screen
+        screen.fill(WHITE)
         guess = None  # Initialize guess to None before the event loop
 
         for event in pygame.event.get():
@@ -135,17 +141,9 @@ def new_game(difficulty):
                     wrong.append(guess)
 
             if attempts == 0:
-                print(f"Sa kaotasid. Sõna oli: {word}")
-                game_over = True
-
-        # Clear the screen
-        screen.fill(WHITE)
-
-        # Draw the game state
-        draw_game_state(word, guessed, wrong, attempts, screen)
-
-        # Draw the wrong letters
-        draw_wrong_letters(wrong, screen)
+                game_over_screen("lose", word)
+            elif all(letter in guessed for letter in word):
+                game_over_screen("victory", word)
 
         # Draw the input box
         input_box.draw(screen)
@@ -157,14 +155,43 @@ def new_game(difficulty):
         if game_over:
             draw_button("Tagasi", back_button)
 
-        # Update the display
-        pygame.display.flip()
-
-        # Cap the frame rate at 60 FPS
-        clock.tick(60)
+        # Draw the game state
+        draw_game_state(word, guessed, wrong, attempts, screen)
 
     # Go back to the main menu after the game ends
     menu()
+
+def game_over_screen(result, word):
+    running = True
+
+    # Define the back button
+    back_button = pygame.Rect(0, 0, 220, 50)
+    back_button.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100)
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if back_button.collidepoint(event.pos):
+                    menu()
+
+        # Clear the screen
+        screen.fill(WHITE)
+
+        # Display the game result
+        result_text = "Sa võitsid! Õige sõna oli: " + word if result == "win" else "Sa kaotasid. Õige sõna oli: " + word
+        draw_text(result_text, (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+
+        # Draw the back button
+        draw_button("Tagasi menüüsse", back_button)
+
+        # Update the display
+        pygame.display.update()
+
+        # Cap the frame rate at 60 FPS
+        clock.tick(60)
 
 # Create a function to draw a button
 def draw_button(text, rect):
@@ -192,6 +219,13 @@ def draw_button(text, rect):
 
     # Draw the text on the screen
     screen.blit(text_surface, text_rect)
+
+def draw_text(text, position):
+    font = pygame.font.Font(None, 36)
+    text_surface = font.render(text, True, BLACK)
+    text_rect = text_surface.get_rect(center=position)
+    screen.blit(text_surface, text_rect)
+
 
 # Create a function to draw the menu
 def draw_menu(play_button, exit_button, mouse_pos):
