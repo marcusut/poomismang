@@ -11,6 +11,12 @@ clock = pygame.time.Clock()
 with open("poomismang\lemmad.txt", encoding="cp1252") as f:
     words =  f.read().split('\n')
 
+# Pictures
+stages = [pygame.image.load(f'poomismang\ASSETS\pulgamees{i}.png') for i in range(8)]
+pilt = pygame.image.load("poomismang\ASSETS\pulgamees.png")
+hapii = pygame.image.load("poomismang\ASSETS\hapii.png")
+
+
 # Make difficulties
 easy = [word for word in words if len(word) <= 4]
 medium = [word for word in words if 4 < len(word) < 7]
@@ -25,6 +31,7 @@ FONT = pygame.font.Font(None, 36)
 # Create the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
+# Create input field so that player can actually guess something
 class InputBox:
     def __init__(self, x, y, w, h, text=''):
         self.rect = pygame.Rect(x, y, w, h)
@@ -54,6 +61,7 @@ class InputBox:
                 self.txt_surface = FONT.render(self.text, True, self.color)
 
     def draw(self, screen):
+        self.rect.center = (SCREEN_WIDTH // 2 - 61, SCREEN_HEIGHT - 100)
         screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
         pygame.draw.rect(screen, self.color, self.rect, 2)
         pygame.display.update(self.rect)
@@ -63,15 +71,15 @@ def draw_game_state(word, guessed, wrong, attempts, screen):
     # Render the text
     text_surface = FONT.render("Sõna: " + ' '.join(letter if letter in guessed else '_' for letter in word), True, BLACK)
 
+     # Calculate the position of the text
+    text_rect = text_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 200))
+
     # Draw the text on the screen
-    screen.blit(text_surface, (20, 20))
+    screen.blit(text_surface, text_rect)
 
     # Draw the wrong letters
     draw_wrong_letters(wrong, screen)
 
-    # Draw the hangman
-    # Add your hangman drawing code here
-    
     # Update the display
     pygame.display.update()
 
@@ -96,10 +104,11 @@ def new_game(difficulty):
     wrong = []
 
 # Define the input box
-    input_box = InputBox(100, 100, 140, 32)
+    input_box = InputBox(0, 0, 140, 32)
 
 # Define the submit button
-    submit_button = pygame.Rect(250, 100, 100, 32)
+    submit_button = pygame.Rect(0, 0, 100, 32)
+    submit_button.center = (SCREEN_WIDTH // 2 + 61, SCREEN_HEIGHT - 100)
 
 # Define the back button
     back_button = pygame.Rect(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100, 100, 50)
@@ -141,7 +150,7 @@ def new_game(difficulty):
                     wrong.append(guess)
 
             if attempts == 0:
-                game_over_screen("lose", word)
+                game_over_screen("defeat", word)
             elif all(letter in guessed for letter in word):
                 game_over_screen("victory", word)
 
@@ -150,6 +159,9 @@ def new_game(difficulty):
 
         # Draw the submit button
         draw_button("Sisesta", submit_button)
+
+        # Draw the hangman
+        screen.blit(stages[7 - attempts], (100, 100))
 
         # Draw the back button if the game is over
         if game_over:
@@ -180,9 +192,13 @@ def game_over_screen(result, word):
         # Clear the screen
         screen.fill(WHITE)
 
+        # Draw hapii
+        result_image = hapii if result == "victory" else stages[7]
+        screen.blit(result_image, (100, 100))
+
         # Display the game result
-        result_text = "Sa võitsid! Õige sõna oli: " + word if result == "win" else "Sa kaotasid. Õige sõna oli: " + word
-        draw_text(result_text, (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        result_text = "Sa võitsid! Õige sõna oli: " + word if result == "victory" else "Sa kaotasid. Õige sõna oli: " + word
+        draw_text(result_text, (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 200))
 
         # Draw the back button
         draw_button("Tagasi menüüsse", back_button)
@@ -239,6 +255,9 @@ def draw_menu(play_button, exit_button, mouse_pos):
     # Draw the buttons
     draw_button("Mängi", play_button)
     draw_button("Välju", exit_button)
+    
+    # Draw pulgamees
+    screen.blit(pilt, (100, 100))
 
 # Create a function to handle the difficulty selection
 def difficulty_selection():
