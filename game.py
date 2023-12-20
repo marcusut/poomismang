@@ -1,20 +1,30 @@
 import pygame
 import sys
 import random
+import os
 
 # Initialize Pygame
 pygame.init()
 
 clock = pygame.time.Clock()
 
+def resource_path(relative_path):
+    try:
+    # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 # Read file
-with open("poomismang\ASSETS\lemmad.txt", encoding="cp1252") as f:
+with open("ASSETS\lemmad.txt", encoding="cp1252") as f:
     words =  f.read().split('\n')
 
 # Pictures
-stages = [pygame.image.load(f'poomismang\ASSETS\pulgamees{i}.png') for i in range(8)]
-pilt = pygame.image.load("poomismang\ASSETS\pulgamees.png")
-hapii = pygame.image.load("poomismang\ASSETS\hapii.png")
+stages = [pygame.image.load(f'ASSETS\pulgamees{i}.png') for i in range(8)]
+pilt = pygame.image.load("ASSETS\pulgamees.png")
+hapii = pygame.image.load("ASSETS\hapii.png")
 
 
 # Make difficulties
@@ -30,6 +40,9 @@ FONT = pygame.font.Font(None, 36)
 
 # Create the screen
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+# Window name
+pygame.display.set_caption("Poomismäng")
 
 # Create input field so that player can actually guess something
 class InputBox:
