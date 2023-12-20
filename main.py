@@ -5,6 +5,8 @@ import random
 # Initialize Pygame
 pygame.init()
 
+clock = pygame.time.Clock()
+
 # Read file
 with open("poomismang\lemmad.txt", encoding="cp1252") as f:
     words =  f.read().split('\n')
@@ -26,19 +28,18 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 class InputBox:
     def __init__(self, x, y, w, h, text=''):
         self.rect = pygame.Rect(x, y, w, h)
-        self.color = (255, 0, 0)
+        self.color_inactive = pygame.Color('lightskyblue3')
+        self.color_active = pygame.Color('dodgerblue2')
+        self.color = self.color_inactive
         self.text = text
         self.txt_surface = FONT.render(text, True, self.color)
         self.active = False
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            # Toggle the active variable when the user clicks on the input box.
             if self.rect.collidepoint(event.pos):
                 self.active = not self.active
-            else:
-                self.active = False
-            self.color = (0, 255, 0) if self.active else (255, 0, 0)
+            self.color = self.color_active if self.active else self.color_inactive
         if event.type == pygame.KEYDOWN:
             if self.active:
                 if event.key == pygame.K_RETURN:
@@ -55,13 +56,14 @@ class InputBox:
         pygame.draw.rect(screen, self.color, self.rect, 2)
         screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
         pygame.draw.rect(screen, self.color, self.rect, 2)
+        pygame.display.update(self.rect)
 
 def draw_game_state(word, guessed, wrong, attempts, screen):
     # Clear the screen
     screen.fill(WHITE)
 
     # Render the text
-    text_surface = FONT.render("Word: " + ''.join(letter if letter in guessed else '_' for letter in word), True, BLACK)
+    text_surface = FONT.render("Sõna: " + ' '.join(letter if letter in guessed else '_' for letter in word), True, BLACK)
 
     # Draw the text on the screen
     screen.blit(text_surface, (20, 20))
@@ -75,7 +77,7 @@ def draw_game_state(word, guessed, wrong, attempts, screen):
 def draw_wrong_letters(wrong, screen):
     # Render the text
     wrong_text = ", ".join(wrong)
-    text_surface = FONT.render("Wrong Letters: " + wrong_text, True, BLACK)
+    text_surface = FONT.render("Valed katsed: " + wrong_text, True, BLACK)
 
     # Draw the text on the screen
     screen.blit(text_surface, (20, 60))  # Adjust the position as needed
@@ -84,18 +86,18 @@ def draw_wrong_letters(wrong, screen):
 def new_game(difficulty):
     running = True
     game_over = False
-    attempts = 7
+    attempts = 7  # Maximum number of incorrect guesses
     word = difficulty[random.randint(0, len(difficulty)-1)]
     guessed = []
     wrong = []
 
-    # Define the input box
+# Define the input box
     input_box = InputBox(100, 100, 140, 32)
 
-    # Define the submit button
+# Define the submit button
     submit_button = pygame.Rect(250, 100, 100, 32)
 
-    # Define the back button
+# Define the back button
     back_button = pygame.Rect(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT - 100, 100, 50)
 
     while running:
@@ -116,7 +118,7 @@ def new_game(difficulty):
                     if guess in word:
                         guessed.append(guess)
                         if all(letter in guessed for letter in word):
-                            print(f"Well done! You guessed the word! The word was: {word}")
+                            print(f"Tubli! Sa arvasid sõna ära! Sõna oli {word}.")
                             game_over = True
                     else:
                         attempts -= 1
@@ -126,34 +128,40 @@ def new_game(difficulty):
                 if guess in word:
                     guessed.append(guess)
                     if all(letter in guessed for letter in word):
-                        print(f"Well done! You guessed the word! The word was: {word}")
+                        print(f"Tubli! Sa arvasid sõna ära! Sõna oli: {word}.")
                         game_over = True
                 else:
                     attempts -= 1
                     wrong.append(guess)
 
             if attempts == 0:
-                print(f"You lost. The word was: {word}")
+                print(f"Sa kaotasid. Sõna oli: {word}")
                 game_over = True
 
-            # Draw the game state
-            draw_game_state(word, guessed, wrong, attempts, screen)
+        # Clear the screen
+        screen.fill(WHITE)
 
-            # Draw the wrong letters
-            draw_wrong_letters(wrong, screen)
+        # Draw the game state
+        draw_game_state(word, guessed, wrong, attempts, screen)
 
-            # Draw the input box
-            input_box.draw(screen)
+        # Draw the wrong letters
+        draw_wrong_letters(wrong, screen)
 
-            # Draw the submit button
-            draw_button("Submit", submit_button)
+        # Draw the input box
+        input_box.draw(screen)
 
-            # Draw the back button if the game is over
-            if game_over:
-                draw_button("Back", back_button)
+        # Draw the submit button
+        draw_button("Sisesta", submit_button)
 
-            # Update the display
-            pygame.display.flip()
+        # Draw the back button if the game is over
+        if game_over:
+            draw_button("Tagasi", back_button)
+
+        # Update the display
+        pygame.display.flip()
+
+        # Cap the frame rate at 60 FPS
+        clock.tick(60)
 
     # Go back to the main menu after the game ends
     menu()
@@ -195,8 +203,8 @@ def draw_menu(play_button, exit_button, mouse_pos):
     exit_button.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - SCREEN_HEIGHT // 3 + 170)
 
     # Draw the buttons
-    draw_button("Play", play_button)
-    draw_button("Exit", exit_button)
+    draw_button("Mängi", play_button)
+    draw_button("Välju", exit_button)
 
 # Create a function to handle the difficulty selection
 def difficulty_selection():
@@ -239,6 +247,7 @@ def difficulty_selection():
 
         # Update the display
         pygame.display.flip()
+        clock.tick(60)  # Cap the frame rate at 60 FPS
 
 def draw_difficulty_selection(easy_button, medium_button, hard_button, back_button, mouse_pos):
     # Clear the screen
@@ -251,10 +260,10 @@ def draw_difficulty_selection(easy_button, medium_button, hard_button, back_butt
     back_button.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50)
 
     # Draw the buttons
-    draw_button("Easy", easy_button)
-    draw_button("Medium", medium_button)
-    draw_button("Hard", hard_button)
-    draw_button("Back", back_button)
+    draw_button("Kerge", easy_button)
+    draw_button("Paras", medium_button)
+    draw_button("Raske", hard_button)
+    draw_button("Tagasi", back_button)
 
 # Create a function to handle the menu
 def menu():
@@ -285,6 +294,7 @@ def menu():
 
         # Update the display
         pygame.display.flip()
+        clock.tick(60)  # Cap the frame rate at 60 FPS
 
     pygame.quit()
     sys.exit()
