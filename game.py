@@ -8,7 +8,7 @@ pygame.init()
 clock = pygame.time.Clock()
 
 # Read file
-with open("poomismang\lemmad.txt", encoding="cp1252") as f:
+with open("poomismang\ASSETS\lemmad.txt", encoding="cp1252") as f:
     words =  f.read().split('\n')
 
 # Pictures
