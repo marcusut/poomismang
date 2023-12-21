@@ -35,7 +35,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Window name
 pygame.display.set_caption("Poomismäng")
 
-# Create input field so that player can actually guess something
+# Create input field so that player can actually guess something https://stackoverflow.com/a/46390412
 class InputBox:
     def __init__(self, x, y, w, h, text=''):
         self.rect = pygame.Rect(x, y, w, h)
