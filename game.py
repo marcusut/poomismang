@@ -8,15 +8,6 @@ pygame.init()
 
 clock = pygame.time.Clock()
 
-def resource_path(relative_path):
-    try:
-    # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
-
 # Read file
 with open("ASSETS\lemmad.txt", encoding="cp1252") as f:
     words =  f.read().split('\n')
@@ -96,7 +87,6 @@ def draw_game_state(word, guessed, wrong, attempts, screen):
     # Update the display
     pygame.display.update()
 
-    # Cap the frame rate at 60 FPS
     clock.tick(60)
 
 def draw_wrong_letters(wrong, screen):
@@ -180,11 +170,11 @@ def new_game(difficulty):
         if game_over:
             draw_button("Tagasi", back_button)
 
-        # Draw the game state
         draw_game_state(word, guessed, wrong, attempts, screen)
 
-    # Go back to the main menu after the game ends
     menu()
+
+import webbrowser
 
 def game_over_screen(result, word):
     running = True
@@ -192,6 +182,10 @@ def game_over_screen(result, word):
     # Define the back button
     back_button = pygame.Rect(0, 0, 220, 50)
     back_button.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100)
+
+    # Define the link button
+    link_button = pygame.Rect(0, 0, 220, 50)
+    link_button.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 155)
 
     while running:
         for event in pygame.event.get():
@@ -201,8 +195,9 @@ def game_over_screen(result, word):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if back_button.collidepoint(event.pos):
                     menu()
+                elif link_button.collidepoint(event.pos):
+                    webbrowser.open(f'http://eki.ee/dict/qs/index.cgi?Q={word}')
 
-        # Clear the screen
         screen.fill(WHITE)
 
         # Draw hapii
@@ -216,10 +211,11 @@ def game_over_screen(result, word):
         # Draw the back button
         draw_button("Tagasi menüüsse", back_button)
 
-        # Update the display
+        # Draw the link button
+        draw_button(f"Vaata sõna ekis", link_button)
+
         pygame.display.update()
 
-        # Cap the frame rate at 60 FPS
         clock.tick(60)
 
 # Create a function to draw a button
@@ -258,7 +254,6 @@ def draw_text(text, position):
 
 # Create a function to draw the menu
 def draw_menu(play_button, exit_button, mouse_pos):
-    # Clear the screen
     screen.fill(WHITE)
 
     # Calculate the positions
@@ -311,12 +306,10 @@ def difficulty_selection():
         # Draw the difficulty selection
         draw_difficulty_selection(easy_button, medium_button, hard_button, back_button, mouse_pos)
 
-        # Update the display
         pygame.display.flip()
-        clock.tick(60)  # Cap the frame rate at 60 FPS
+        clock.tick(60)
 
 def draw_difficulty_selection(easy_button, medium_button, hard_button, back_button, mouse_pos):
-    # Clear the screen
     screen.fill(WHITE)
 
     # Calculate the positions
@@ -355,12 +348,10 @@ def menu():
                     # The 'Exit' button was clicked
                     running = False
 
-        # Draw the menu
         draw_menu(play_button, exit_button, mouse_pos)
 
-        # Update the display
         pygame.display.flip()
-        clock.tick(60)  # Cap the frame rate at 60 FPS
+        clock.tick(60)
 
     pygame.quit()
     sys.exit()
